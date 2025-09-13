@@ -7,6 +7,10 @@ const notesCtrl = require('../controllers/notesController');
 // Upload
 router.post('/upload-signature', jwtCheck, uploadCtrl.getUploadSignature);
 router.post('/notes', jwtCheck, attachUser, notesCtrl.createNote)
+router.get("/my-notes", jwtCheck, attachUser, notesCtrl.myNotes);
+router.put("/notes/:id", jwtCheck, attachUser, notesCtrl.updateNote);
+router.delete("/notes/:id", jwtCheck, attachUser, notesCtrl.deleteNote);
+
 
 // Notes (view only)
 router.get('/notes', jwtCheck, attachUser, notesCtrl.listNotes);
