@@ -29,7 +29,7 @@ exports.getNote = async (req, res) => {
 
     const userEmail = req.user?.email;
 
-    // Uploader always has access
+
     if (
       !note.isPublic &&
       (!note.allowedEmails || !note.allowedEmails.includes(userEmail)) &&
@@ -82,4 +82,37 @@ exports.createNote = async (req, res) => {
     console.error("Error in createNote:", err)
     res.status(500).json({ error: "Failed to save note" })
   }
+}
+
+
+
+exports.myNotes = async (req, res) => {
+  const auth0Id = req.user?.auth0Id
+  if (!auth0Id) return res.status(401).json({ error: "Unauthorized" })
+  const user = await User.findOne({ auth0Id })
+  const notes = await Note.find({ uploader: user._id }).sort({ createdAt: -1 })
+  res.json({ notes })
+}
+
+exports.updateNote = async (req, res) => {
+  const { id } = req.params
+  const { title } = req.body
+  const auth0Id = req.user?.auth0Id
+  const user = await User.findOne({ auth0Id })
+  const note = await Note.findOneAndUpdate(
+    { _id: id, uploader: user._id },
+    { title },
+    { new: true }
+  )
+  if (!note) return res.status(404).json({ error: "Not found or unauthorized" })
+  res.json(note)
+}
+
+exports.deleteNote = async (req, res) => {
+  const { id } = req.params
+  const auth0Id = req.user?.auth0Id
+  const user = await User.findOne({ auth0Id })
+  const note = await Note.findOneAndDelete({ _id: id, uploader: user._id })
+  if (!note) return res.status(404).json({ error: "Not found or unauthorized" })
+  res.json({ success: true })
 }
