@@ -14,8 +14,28 @@ const noteRoutes = require('./routes/noteRoutes');
 const userRoutes = require('./routes/userRoutes')
 const app = express();
 
+
+const whitelist = [];
+
+if (process.env.NODE_ENV === 'production') {
+  whitelist.push('https://sharenotes-tau.vercel.app');
+} else {
+  whitelist.push('http://localhost:5173'); 
+}
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(morgan('dev'));
 
